@@ -1,0 +1,98 @@
+import java.io.*;
+import java.util.*;
+
+public class AddressBook {
+    private Map<String, String> contacts;
+
+    public AddressBook() {
+        contacts = new HashMap<>();
+    }
+
+    public void load(String filename) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 2) {
+                    contacts.put(parts[0].trim(), parts[1].trim());
+                } else {
+                    System.err.println("Error: Formato de línea incorrecto en el archivo. Ignorando línea.");
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error al cargar el archivo: " + e.getMessage());
+        }
+    }
+
+    public void save(String filename) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+            for (Map.Entry<String, String> entry : contacts.entrySet()) {
+                writer.write(entry.getKey() + "," + entry.getValue());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error al guardar el archivo: " + e.getMessage());
+        }
+    }
+
+    public void list() {
+        System.out.println("Contactos:");
+        for (Map.Entry<String, String> entry : contacts.entrySet()) {
+            System.out.println(entry.getKey() + " : " + entry.getValue());
+        }
+    }
+
+    public void create(String number, String name) {
+        contacts.put(number, name);
+    }
+
+    public void delete(String number) {
+        contacts.remove(number);
+    }
+
+    public static void main(String[] args) {
+        AddressBook addressBook = new AddressBook();
+        addressBook.load("contacts.txt");
+
+        Scanner scanner = new Scanner(System.in);
+        int choice;
+        do {
+            System.out.println("Menú:");
+            System.out.println("1. Listar contactos");
+            System.out.println("2. Crear contacto");
+            System.out.println("3. Eliminar contacto");
+            System.out.println("4. Guardar y salir");
+            System.out.print("Seleccione una opción: ");
+            choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (choice) {
+                case 1:
+                    addressBook.list();
+                    break;
+                case 2:
+                    System.out.print("Ingrese el nombre del contacto: ");
+                    String name = scanner.nextLine();
+                    System.out.print("Ingrese el número del contacto: ");
+                    String number = scanner.nextLine();
+                    addressBook.create(number, name);
+                    System.out.println("Contacto creado exitosamente.");
+                    break;
+                case 3:
+                    System.out.print("Ingrese el número del contacto a eliminar: ");
+                    String numberToDelete = scanner.nextLine();
+                    addressBook.delete(numberToDelete);
+                    System.out.println("Contacto eliminado exitosamente.");
+                    break;
+                case 4:
+                    addressBook.save("contacts.txt");
+                    System.out.println("¡Adiós!");
+                    break;
+                default:
+                    System.out.println("Opción no válida");
+            }
+        } while (choice != 4);
+
+        scanner.close();
+    }
+}
